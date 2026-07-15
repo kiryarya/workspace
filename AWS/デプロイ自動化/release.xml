@@ -1,0 +1,85 @@
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="APP1-release" default="release">
+
+    <!-- WebPerformerで生成されたWebアプリのルート -->
+    <property name="generated.app"
+              location="../WPProject/generated/APP1"/>
+
+    <!-- 外部バッチの配置元 -->
+    <property name="external.batch"
+              location="../BatchProject/dist"/>
+
+    <!-- WARファイルの出力先 -->
+    <property name="release.dir"
+              location="release"/>
+
+    <!-- WARファイル名 -->
+    <property name="war.name"
+              value="APP1.war"/>
+
+    <!-- 必要なディレクトリが存在するか確認 -->
+    <target name="validate">
+
+        <available file="${generated.app}/WEB-INF"
+                   type="dir"
+                   property="generated.app.exists"/>
+
+        <fail unless="generated.app.exists"
+              message="WebPerformer生成物が見つかりません: ${generated.app}/WEB-INF"/>
+
+        <available file="${external.batch}"
+                   type="dir"
+                   property="external.batch.exists"/>
+
+        <fail unless="external.batch.exists"
+              message="外部バッチの配置元が見つかりません: ${external.batch}"/>
+
+    </target>
+
+    <!-- 前回作成したreleaseディレクトリを削除 -->
+    <target name="clean">
+
+        <delete dir="${release.dir}"/>
+        <mkdir dir="${release.dir}"/>
+
+    </target>
+
+    <!-- 外部バッチをWebアプリへ反映 -->
+    <target name="copy-external-batch"
+            depends="validate">
+
+        <copy todir="${generated.app}/WEB-INF/lib"
+              overwrite="true"
+              verbose="true">
+
+            <fileset dir="${external.batch}">
+                <include name="external-batch.jar"/>
+            </fileset>
+
+        </copy>
+
+    </target>
+
+    <!-- WARファイルを作成 -->
+    <target name="create-war"
+            depends="clean,copy-external-batch">
+
+        <war destfile="${release.dir}/${war.name}"
+             basedir="${generated.app}"
+             webxml="${generated.app}/WEB-INF/web.xml"/>
+
+    </target>
+
+    <!-- リリース処理 -->
+    <target name="release"
+            depends="create-war">
+
+        <echo message="WARファイルを作成しました。"/>
+        <echo message="${release.dir}/${war.name}"/>
+
+    </target>
+
+</project>
+```
