@@ -7,12 +7,13 @@ call ant -f release.xml release
 
 if errorlevel 1 (
     echo.
-    echo リリースファイルの作成に失敗しました。
+    echo リリース処理に失敗しました。
+    pause
     exit /b 1
 )
 
 echo.
-echo WARファイルを作成しました。
-echo %CD%\release\application.war
+echo リリース処理が完了しました。
+pause
 
 endlocal
