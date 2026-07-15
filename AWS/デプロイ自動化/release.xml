@@ -1,15 +1,20 @@
-```xml
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="APP1-release" default="release">
+<project name="APP1-release"
+         default="release"
+         basedir=".">
 
     <!-- WebPerformerで生成されたWebアプリのルート -->
     <property name="generated.app"
               location="../WPProject/generated/APP1"/>
 
-    <!-- 外部バッチの配置元 -->
+    <!-- 実行する外部BATファイル -->
     <property name="external.batch"
-              location="../BatchProject/dist"/>
+              location="C:/deploy-tools/apply-external-batch.bat"/>
+
+    <!-- 外部BATファイルの作業ディレクトリ -->
+    <property name="external.batch.dir"
+              location="C:/deploy-tools"/>
 
     <!-- WARファイルの出力先 -->
     <property name="release.dir"
@@ -19,7 +24,7 @@
     <property name="war.name"
               value="APP1.war"/>
 
-    <!-- 必要なディレクトリが存在するか確認 -->
+    <!-- 必要なファイルやディレクトリの存在確認 -->
     <target name="validate">
 
         <available file="${generated.app}/WEB-INF"
@@ -30,11 +35,11 @@
               message="WebPerformer生成物が見つかりません: ${generated.app}/WEB-INF"/>
 
         <available file="${external.batch}"
-                   type="dir"
+                   type="file"
                    property="external.batch.exists"/>
 
         <fail unless="external.batch.exists"
-              message="外部バッチの配置元が見つかりません: ${external.batch}"/>
+              message="外部BATファイルが見つかりません: ${external.batch}"/>
 
     </target>
 
@@ -46,25 +51,29 @@
 
     </target>
 
-    <!-- 外部バッチをWebアプリへ反映 -->
-    <target name="copy-external-batch"
+    <!-- プロジェクト外にあるBATファイルを実行 -->
+    <target name="execute-external-batch"
             depends="validate">
 
-        <copy todir="${generated.app}/WEB-INF/lib"
-              overwrite="true"
-              verbose="true">
+        <echo message="外部BATファイルを実行します: ${external.batch}"/>
 
-            <fileset dir="${external.batch}">
-                <include name="external-batch.jar"/>
-            </fileset>
+        <exec executable="cmd.exe"
+              dir="${external.batch.dir}"
+              failonerror="true"
+              failifexecutionfails="true">
 
-        </copy>
+            <arg value="/c"/>
+            <arg path="${external.batch}"/>
+
+        </exec>
+
+        <echo message="外部BATファイルの実行が完了しました。"/>
 
     </target>
 
     <!-- WARファイルを作成 -->
     <target name="create-war"
-            depends="clean,copy-external-batch">
+            depends="clean,execute-external-batch">
 
         <war destfile="${release.dir}/${war.name}"
              basedir="${generated.app}"
@@ -82,4 +91,3 @@
     </target>
 
 </project>
-```
